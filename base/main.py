@@ -85,42 +85,36 @@ def getExtentions():
 
 # -- Helper
 
-def clean_filename(name: str) -> str:
-    if not name:
+def clean_filename(name: str, type: str, category: str) -> str:
+    if not name or "." not in name:
         return name
 
-    if "." in name:
-        name_part, ext = name.rsplit(".", 1)
-        ext = "." + ext.lower()
-    else:
-        name_part, ext = name, ""
+    name_part, _ = name.rsplit(".", 1)
+    ext = "." + type.lower()
+
+    original = name_part.strip()
 
     cleaned = re.sub(r"[\[\(\{].*?[\]\)\}]", "", name_part)
 
-    junk_patterns = [
-        r"\b(HD|4K|1080p|720p|480p|2160p|BluRay|WEBRip|WEB-DL|HDRip|x264|x265|H264|H265)\b",
-        r"\b(FULL|UNCUT|EXTENDED|REPACK|DUAL|AUDIO|MULTi|PROPER|REMUX)\b",
-        r"\b(NEW|NEW!|★|⭐|✨|🔥|NEW 202[0-9])\b",
-        r"\b(SEASON|S)\s*\d{1,2}\b",
-        r"\b(EP?|E)\s*\d{1,3}\b",
-        r"\b(19|20)\d{2}\b",   
-        r"\bPart\s*\d+\b",
-        r"\bVol\.?\s*\d+\b",
-    ]
-    for pattern in junk_patterns:
-        cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b(HD|4K|1080p|720p|480p|2160p|BluRay|WEBRip|WEB-DL|x264|x265|H264|H265|REMUX|REPACK|DUAL|MULTi|PROPER|UNCUT|EXTENDED|FULL|NEW|★|⭐|✨|Fire)\b", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b(19|20)\d{2}\b", "", cleaned)
+    cleaned = re.sub(r"\b(S|Season|E|Ep?|Episode)\s*\d+\b", "", cleaned, flags=re.IGNORECASE)
 
     cleaned = re.sub(r"[★✨♦♥!@#$%^&*~+=\[\]\{\}|\\]", " ", cleaned)
-    cleaned = re.sub(r"[._-]{2,}", " ", cleaned)
     cleaned = re.sub(r"[._-]", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
-    cleaned = re.sub(r"\s+", " ", cleaned) 
-    cleaned = cleaned.strip(" -_.")
+    is_hash = bool(re.fullmatch(r"[a-fA-F0-9._-]{10,}", original))
+    is_junk = bool(re.fullmatch(r"[\d\s._-]+", original)) and len(original) > 8
+    has_meaning = len(re.findall(r"[a-zA-Z]", cleaned)) >= 3
 
-    if not cleaned.strip():
-        cleaned = name_part
+    if (is_hash or is_junk or not has_meaning) and len(original) > 8:
+        short = re.sub(r"[^a-zA-Z0-9]", "", original)[:5]
+        if len(short) < 3:
+            short = (short + "xxx")[:5]
+        return f"{short} [{category}]{ext}"
 
-    return cleaned.strip() + ext
+    return (cleaned or "Unknown") + ext
 
 def getCategory(extention) -> str:
     for category, extensions in EXTENSIONS.items():
@@ -164,13 +158,13 @@ def changeConfig(config:str,key:str,value:Any):
     CONFIG[config][key] = value
 
 # -- File Mover
-def move(path) -> Optional[dict]:
+def move(path) -> tuple[bool, str]:
     file, type_ = getPath(path)
     if not file or type_ != "file":
         return False, "Not a file or doesn't exist"
 
-    extention = file.suffix
-    category = getCategory(extention.lstrip("."))
+    extension = file.suffix
+    category = getCategory(extension.lstrip("."))
 
     url = CONFIG["path"].get(category)
     if not url or url == "":
@@ -182,21 +176,26 @@ def move(path) -> Optional[dict]:
     dest_folder = Path(url)
     dest_folder.mkdir(parents=True, exist_ok=True)
 
-    dest_path = dest_folder / clean_filename(file.name)
+    clean_name = clean_filename(file.name, extension.lstrip("."), category)
+    dest_path = dest_folder / clean_name
 
     if dest_path.exists():
+        stem = dest_path.stem 
+        suffix = dest_path.suffix
         counter = 1
-        while dest_path.exists():
-            new_name = f"{file.stem} ({counter}){file.suffix}"
+        while True:
+            new_name = f"{stem} ({counter}){suffix}"
             dest_path = dest_folder / new_name
+            if not dest_path.exists():
+                break
             counter += 1
 
     try:
         shutil.move(str(file), str(dest_path))
-        print(f"Moved: {path} → {dest_path}  [{category}]",anim=False)
+        print(f"Moved: {path} → {dest_path}  [{category}]", anim=False)
         return True, category
     except Exception as error:
-        print(f"Failed to move {path}: {error}",anim=False)
+        print(f"Failed to move {path}: {error}", anim=False)
         return False, str(error)
 
 # -- Clean Up 

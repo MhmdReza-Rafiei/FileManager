@@ -158,7 +158,7 @@ def changeConfig(config:str,key:str,value:Any):
     CONFIG[config][key] = value
 
 # -- File Mover
-def move(path) -> tuple[bool, str]:
+def move(path,cleanNames:bool=False) -> tuple[bool, str]:
     file, type_ = getPath(path)
     if not file or type_ != "file":
         return False, "Not a file or doesn't exist"
@@ -176,7 +176,10 @@ def move(path) -> tuple[bool, str]:
     dest_folder = Path(url)
     dest_folder.mkdir(parents=True, exist_ok=True)
 
-    clean_name = clean_filename(file.name, extension.lstrip("."), category)
+    if cleanNames:
+      clean_name = clean_filename(file.name, extension.lstrip("."), category)
+    else:
+      clean_name = file.name
     dest_path = dest_folder / clean_name
 
     if dest_path.exists():
@@ -199,7 +202,7 @@ def move(path) -> tuple[bool, str]:
         return False, str(error)
 
 # -- Clean Up 
-def cleanUp(dirs: List) -> Optional[dict]:
+def cleanUp(dirs: List,cleanNames:bool=False) -> Optional[dict]:
     Stats = {
         "success": {'total': 0, 'list': []},
         'fails': {'total': 0, 'list': []},
@@ -218,7 +221,7 @@ def cleanUp(dirs: List) -> Optional[dict]:
 
         if type_ == "file":
             Stats["total"] += 1
-            success, info = move(path)
+            success, info = move(path,cleanNames)
             if success:
                 Stats['success']['total'] += 1
                 Stats['success']['list'].append(str(path))
@@ -233,7 +236,7 @@ def cleanUp(dirs: List) -> Optional[dict]:
             for file in path.rglob("*"):
                 if file.is_file():
                     Stats["total"] += 1
-                    success, info = move(file)
+                    success, info = move(file,cleanNames)
                     if success:
                         Stats['success']['total'] += 1
                         Stats['done'].append({"path": str(file), "status": "success", "category": info})

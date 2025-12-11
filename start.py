@@ -120,7 +120,7 @@ class Panel:
 
 def welcome():
     header(f"{getUser() + " " if getUser() else ""}Welcome to FileManager 📰")
-    print("🔔   GitHub: https://github.com/Ariam-AI/Ariam")
+    print("🔔   GitHub: https://github.com/MhmdReza-Rafiei/FileManager")
     print("🎗️    MadeBy: @MhmdReza Rafiei")
 
 def file_Clean(paths: list = None):

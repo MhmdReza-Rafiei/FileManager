@@ -63,9 +63,9 @@ class Panel:
             if key.lower() in ["help", "exit"]:
                 continue
             desc = item.get("desc", "")
-            print(f"   {key.title():<18} → {desc}")
-        print("   Help              → Show this help")
-        print("   Exit              → Go back / close panel")
+            print(f"{key.title():<15} → {desc}")
+        print("Help              → Show this help")
+        print("Exit              → Go back / close panel")
         print()
 
     def draw(self):
@@ -73,7 +73,7 @@ class Panel:
         num = 1
         for key, item in self.selection.items():
             item["id"] = num
-            print(f"   {num}. {key.title():<15} → {item.get('desc', '')}")
+            print(f"{num}. {key.title():<15} → {item.get('desc', '')}")
             num += 1
         print()
 

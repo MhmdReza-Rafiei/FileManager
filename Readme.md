@@ -54,7 +54,7 @@ Press Enter to continue...
 text## How to Use (15 Seconds)
 
 ```bash
-git clone https://github.com/MhmdReza/FileManager.git
+git clone https://github.com/MhmdReza-Rafiei/FileManager.git
 cd FileManager
 pip install -r requirements.txt
 python start.py          # Launch
@@ -96,7 +96,7 @@ Anyone who believes in digital peace
 
 
 ## Created By **MhmdReza Rafiei**
-## GitHub: **@MhmdReza**
+## GitHub: **@MhmdReza-Rafiei**
 
 Star this repo if you hate messy downloads
 Fork it and make it even smarter

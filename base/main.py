@@ -85,7 +85,7 @@ def getExtentions():
 
 # -- Helper
 
-def clean_filename(name: str, type: str, category: str) -> str:
+def clean_filename(name: str, type: str) -> str:
     if not name or "." not in name:
         return name
 
@@ -112,7 +112,7 @@ def clean_filename(name: str, type: str, category: str) -> str:
         short = re.sub(r"[^a-zA-Z0-9]", "", original)[:5]
         if len(short) < 3:
             short = (short + "xxx")[:5]
-        return f"{short} [{category}]{ext}"
+        return f"{short}{ext}"
 
     return (cleaned or "Unknown") + ext
 
@@ -177,7 +177,7 @@ def move(path,cleanNames:bool=False) -> tuple[bool, str]:
     dest_folder.mkdir(parents=True, exist_ok=True)
 
     if cleanNames:
-      clean_name = clean_filename(file.name, extension.lstrip("."), category)
+      clean_name = clean_filename(file.name, extension.lstrip("."))
     else:
       clean_name = file.name
     dest_path = dest_folder / clean_name

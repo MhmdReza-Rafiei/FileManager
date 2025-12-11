@@ -153,7 +153,7 @@ def file_Clean(paths: list = None):
     for p in paths:
         print(f"   → {p}")
     print()
-    Input = input("Clean File Names (y/): ").strip().lower()
+    Input = input("Clean File Names (y/n): ").strip().lower()
     if Input == "y":
         Input = True 
     elif Input == "n":

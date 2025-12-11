@@ -86,30 +86,41 @@ def getExtentions():
 # -- Helper
 
 def clean_filename(name: str) -> str:
-    """
-    Removes ALL junk: (1) (33) [HD] (!) ★ NEW 2024 etc.
-    Works on even the most spammed filenames.
-    """
-    if not name or "." not in name:
+    if not name:
         return name
-    name_part, ext = name.rsplit(".", 1)
-    ext = "." + ext.lower()
-    cleaned = name_part
 
-    cleaned = re.sub(r"\s*[-_.★♦♥!~✨]+", " ", cleaned)                 # ★ ! ~ → space
+    if "." in name:
+        name_part, ext = name.rsplit(".", 1)
+        ext = "." + ext.lower()
+    else:
+        name_part, ext = name, ""
 
-    cleaned = re.sub(r"\b(NEW|FULL|UNCUT|REPACK|HD|4K|1080p|720p|BluRay|WEB)\b", "", cleaned, flags=re.I)
+    cleaned = re.sub(r"[\[\(\{].*?[\]\)\}]", "", name_part)
 
-    cleaned = re.sub(r"\s+\b(19|20)\d{2}\b", "", cleaned)
+    junk_patterns = [
+        r"\b(HD|4K|1080p|720p|480p|2160p|BluRay|WEBRip|WEB-DL|HDRip|x264|x265|H264|H265)\b",
+        r"\b(FULL|UNCUT|EXTENDED|REPACK|DUAL|AUDIO|MULTi|PROPER|REMUX)\b",
+        r"\b(NEW|NEW!|★|⭐|✨|🔥|NEW 202[0-9])\b",
+        r"\b(SEASON|S)\s*\d{1,2}\b",
+        r"\b(EP?|E)\s*\d{1,3}\b",
+        r"\b(19|20)\d{2}\b",   
+        r"\bPart\s*\d+\b",
+        r"\bVol\.?\s*\d+\b",
+    ]
+    for pattern in junk_patterns:
+        cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
 
-    cleaned = re.sub(r"[._-]+", " ", cleaned)        # . _ - → space
-    cleaned = re.sub(r"\s{2,}", " ", cleaned)        # multiple spaces → one
-    cleaned = cleaned.strip(" -_.")                  # trim edges
+    cleaned = re.sub(r"[★✨♦♥!@#$%^&*~+=\[\]\{\}|\\]", " ", cleaned)
+    cleaned = re.sub(r"[._-]{2,}", " ", cleaned)
+    cleaned = re.sub(r"[._-]", " ", cleaned)
+
+    cleaned = re.sub(r"\s+", " ", cleaned) 
+    cleaned = cleaned.strip(" -_.")
 
     if not cleaned.strip():
         cleaned = name_part
 
-    return cleaned + ext
+    return cleaned.strip() + ext
 
 def getCategory(extention) -> str:
     for category, extensions in EXTENSIONS.items():

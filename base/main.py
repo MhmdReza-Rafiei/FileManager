@@ -87,31 +87,25 @@ def getExtentions():
 
 def clean_filename(name: str, type: str) -> str:
     if not name or "." not in name:
-        return name
+        name = name if name.endswith(f".{type}") else f"{name}.{type}"
 
     name_part, _ = name.rsplit(".", 1)
     ext = "." + type.lower()
 
-    original = name_part.strip()
+    cleaned = re.sub(r"\s*\([^()?[^\(\)]*\)", "", name_part)
 
-    cleaned = re.sub(r"[\[\(\{].*?[\]\)\}]", "", name_part)
+    cleaned = re.sub(r"\s*\[[^\[\]]*\]", "", cleaned)
 
     cleaned = re.sub(r"\b(HD|4K|1080p|720p|480p|2160p|BluRay|WEBRip|WEB-DL|x264|x265|H264|H265|REMUX|REPACK|DUAL|MULTi|PROPER|UNCUT|EXTENDED|FULL|NEW|★|⭐|✨|Fire)\b", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\b(19|20)\d{2}\b", "", cleaned)
     cleaned = re.sub(r"\b(S|Season|E|Ep?|Episode)\s*\d+\b", "", cleaned, flags=re.IGNORECASE)
 
-    cleaned = re.sub(r"[★✨♦♥!@#$%^&*~+=\[\]\{\}|\\]", " ", cleaned)
+    cleaned = re.sub(r"[★✨♥!@#$%^&*~+=\\|{}]", " ", cleaned)
     cleaned = re.sub(r"[._-]", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
-    is_hash = bool(re.fullmatch(r"[a-fA-F0-9._-]{10,}", original))
-    is_junk = bool(re.fullmatch(r"[\d\s._-]+", original)) and len(original) > 8
-    has_meaning = len(re.findall(r"[a-zA-Z]", cleaned)) >= 3
-
-    if (is_hash or is_junk or not has_meaning) and len(original) > 8:
-        short = re.sub(r"[^a-zA-Z0-9]", "", original)[:5]
-        if len(short) < 3:
-            short = (short + "xxx")[:5]
+    if len(cleaned) < 2 or re.fullmatch(r"[a-fA-F0-9._\s-]{8,}", name_part, flags=re.I):
+        short = "".join(c for c in name_part if c.isalnum())[:5] or "file"
         return f"{short}{ext}"
 
     return (cleaned or "Unknown") + ext

@@ -67,6 +67,8 @@ class Panel:
         print("Help              → Show this help")
         print("Exit              → Go back / close panel")
         print()
+        _input("\nPress Enter to continue...")
+        return
 
     def draw(self):
         header("Menu")
@@ -162,7 +164,8 @@ def file_Clean(paths: list = None):
         result = lib.cleanUp(paths,cleanNames = Input or False) 
         time.sleep(2)
         lib.showStatus(result) 
-        time.sleep(6)
+        _input("\nPress Enter to continue...")
+        return
     except Exception as e:
         print(f"Error during cleanup: {e}")
 
@@ -185,6 +188,8 @@ def setting(mode="start", key=None, value=None):
         paths_str = ", ".join(paths) if paths else "Not set"
         print(f"User Name    : {lib.CONFIG['system'].get('User_Name', 'Not Set')}")
         print(f"Clean Paths  : {paths_str} → {paths}")
+        _input("\nPress Enter to continue...")
+        return
 
     if mode == "start":
         Panel({
@@ -223,6 +228,7 @@ def main():
           
           lib.changeConfig("system","User_Name",UserName)
           lib.saveConfig("system")
+          _input("\nPress Enter to continue...")
         header("System - Panel")
         SystemPanel = Panel({
             "file clean":{"desc":"File Cleaner","action":file_Clean},
